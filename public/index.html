@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Steganography</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Steganography Service</h1>
+
+    <section id="upload-section">
+        <h2>Upload Files</h2>
+        <form id="file-upload-form">
+            <input type="file" id="plaintext-file" required>
+            <input type="file" id="secret-message-file" required>
+            <input type="number" id="start-bit" placeholder="Start Bit (S)" required>
+            <input type="number" id="periodicity" placeholder="Periodicity (L)" required>
+            <select id="mode">
+                <option value="constant">Constant</option>
+                <option value="varying">Varying</option>
+            </select>
+            <button type="submit">Upload and Encode</button>
+        </form>
+    </section>
+
+    <section id="gallery-section">
+        <h2>Gallery</h2>
+        <div id="gallery"></div>
+    </section>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
