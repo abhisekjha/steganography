@@ -20,15 +20,25 @@ body {
 }
 #login-section, #upload-section, #gallery-section {
     margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
+
 #login-btn {
-    background-color: #4285F4; /* Google blue */
+    background-color: #4285F4;
     color: white;
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
+
 #login-btn:hover {
     background-color: #357ae8;
+}
+
+/* Styles to enhance visibility or hide elements appropriately */
+.hidden {
+    display: none;
 }
