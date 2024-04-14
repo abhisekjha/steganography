@@ -1,70 +1,115 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth, signInWithRedirect, onAuthStateChanged, GoogleAuthProvider } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+// Import necessary Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+import { getAuth, signInWithRedirect, onAuthStateChanged, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
 
-// Your web app's Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBBqg8nVlrinoWJo80w2DMiUFbpr6TOFcs",
-  authDomain: "steganography-500aa.firebaseapp.com",
-  projectId: "steganography-500aa",
-  storageBucket: "steganography-500aa.appspot.com",
-  messagingSenderId: "771055136605",
-  appId: "1:771055136605:web:263bebb1def0a4161482b4",
-  measurementId: "G-RPCZFQ8FMT"
+    apiKey: "AIzaSyBBqg8nVlrinoWJo80w2DMiUFbpr6TOFcs",
+    authDomain: "steganography-500aa.firebaseapp.com",
+    projectId: "steganography-500aa",
+    storageBucket: "steganography-500aa.appspot.com",
+    messagingSenderId: "771055136605",
+    appId: "1:771055136605:web:263bebb1def0a4161482b4",
+    measurementId: "G-RPCZFQ8FMT"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const analytics = getAnalytics(app);  // Optional: Remove if you do not plan to use Analytics
+const storage = getStorage(app);
 
-document.getElementById('file-upload-form').addEventListener('submit', function(event) {
+// Handle file upload form submission
+document.getElementById('file-upload-form').addEventListener('submit', async function(event) {
     event.preventDefault();
-    processFiles();
-});
-
-function processFiles() {
     const pFile = document.getElementById('plaintext-file').files[0];
     const mFile = document.getElementById('secret-message-file').files[0];
-    const startBit = parseInt(document.getElementById('start-bit').value, 10);
-    const periodicity = parseInt(document.getElementById('periodicity').value, 10);
-    const mode = document.getElementById('mode').value;
-
-    if (!pFile || !mFile) {
-        alert("Please upload both a plaintext file and a message file.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const pContents = new Uint8Array(e.target.result);
-        const mReader = new FileReader();
-        mReader.onload = function(e) {
-            const mContents = new Uint8Array(e.target.result);
-            const encodedFile = encodeMessage(pContents, mContents, startBit, periodicity, mode, pFile.type);
-            displayEncodedFile(encodedFile, pFile.type);
-        };
-        mReader.onerror = () => alert("Error reading secret message file.");
-        mReader.readAsArrayBuffer(mFile);
-    };
-    reader.onerror = () => alert("Error reading plaintext file.");
-    reader.readAsArrayBuffer(pFile);
-}
-
-function encodeMessage(pContents, mContents, startBit, periodicity, mode, fileType) {
-    // Adjust processing if fileType is 'text/plain'
-    if (fileType === 'text/plain') {
-        // Special handling for text files if needed
-    }
-    for (let i = startBit; i < mContents.length; i += periodicity) {
-        if (i < pContents.length) {
-            pContents[i] ^= mContents[i % mContents.length];  // Simple XOR encryption
+    if (pFile && mFile) {
+        const pUrl = await uploadFile(pFile);
+        const mUrl = await uploadFile(mFile);
+        if (pUrl && mUrl) {
+            performSteganography(pUrl, mUrl);  // Assuming you will process URLs for demonstration
         }
+    } else {
+        alert("Please select both a plaintext file and a message file.");
     }
-    return new Blob([pContents], {type: fileType});
+});
+
+// Upload a file to Firebase Storage and return the URL
+async function uploadFile(file) {
+    const fileRef = ref(storage, `uploads/${file.name}`);
+    try {
+        const snapshot = await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(snapshot.ref);
+        console.log(`File uploaded! URL: ${url}`);
+        return url;
+    } catch (error) {
+        console.error("Error uploading file:", error);
+        alert("Error uploading file: " + error.message);
+        return null;
+    }
 }
 
+// Perform steganography on the uploaded files (Placeholder function)
+function performSteganography(pUrl, mUrl) {
+    console.log(`Perform steganography with ${pUrl} and ${mUrl}`);
+    
+    // Fetch the plaintext image to be used as the steganography medium
+    fetch(pUrl)
+    .then(response => response.blob())
+    .then(imageBlob => {
+        // Convert image blob to an Image object to be used in a canvas
+        const img = new Image();
+        img.src = URL.createObjectURL(imageBlob);
+        img.onload = () => {
+            // Create a canvas and get its context
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            // Fetch the secret message file
+            fetch(mUrl)
+            .then(response => response.text())
+            .then(text => {
+                // Convert text to binary data
+                const binaryMessage = text.split('').map(char => {
+                    return char.charCodeAt(0).toString(2).padStart(8, '0');
+                }).join('');
+                
+                // Encode the binary data into the image using the LSB method
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                let data = imageData.data;  // the array of pixels in RGBA
+
+                let dataIndex = 0;
+                for (let i = 0; i < binaryMessage.length; i++) {
+                    // Modify the LSB of each pixel component (RGBA)
+                    const bit = binaryMessage[i];
+                    // Ensure we're modifying only the first three components (RGB) and not alpha
+                    if (dataIndex % 4 !== 3) {
+                        data[dataIndex] = (data[dataIndex] & ~1) | parseInt(bit);
+                    }
+                    dataIndex++;
+                }
+
+                // Put the modified image data back on the canvas
+                ctx.putImageData(imageData, 0, 0);
+
+                // Create an image element to display the steganographic image
+                const resultImg = document.createElement('img');
+                resultImg.src = canvas.toDataURL();
+                document.getElementById('gallery').appendChild(resultImg);
+                
+                console.log("Steganography process completed. Image is displayed in the gallery.");
+            });
+        };
+    })
+    .catch(error => console.error('Error in processing the image or message:', error));
+}
+
+
+// Display the processed file in the gallery
 function displayEncodedFile(fileContent, fileType) {
     const gallery = document.getElementById('gallery');
     gallery.innerHTML = '';  // Clear previous content
@@ -89,24 +134,22 @@ function displayEncodedFile(fileContent, fileType) {
     gallery.appendChild(element);
 }
 
+// Handle user authentication with Firebase
 document.getElementById('login-btn').addEventListener('click', () => {
     const provider = new GoogleAuthProvider();
     signInWithRedirect(auth, provider);
 });
 
 onAuthStateChanged(auth, (user) => {
-    const loginSection = document.getElementById('login-section');
     const uploadSection = document.getElementById('upload-section');
     const userInfoDisplay = document.getElementById('user-info');
     if (user) {
-        console.log('User logged in: ', user.displayName);
+        console.log('User logged in:', user.displayName);
         userInfoDisplay.textContent = `Logged in as: ${user.displayName}`;
         uploadSection.style.display = 'block';
-        loginSection.style.display = 'none';
     } else {
         console.log('User not logged in.');
         userInfoDisplay.textContent = 'Not logged in';
         uploadSection.style.display = 'none';
-        loginSection.style.display = 'block';
     }
 });
