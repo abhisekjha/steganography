@@ -1,69 +1,3 @@
-document.getElementById('file-upload-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    const pFile = document.getElementById('plaintext-file').files[0];
-    const mFile = document.getElementById('secret-message-file').files[0];
-    const startBit = parseInt(document.getElementById('start-bit').value, 10);
-    const periodicity = parseInt(document.getElementById('periodicity').value, 10);
-    const mode = document.getElementById('mode').value;
-
-    if (!pFile || !mFile) {
-        alert("Please upload both a plaintext file and a message file.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const pContents = new Uint8Array(e.target.result);
-        const mReader = new FileReader();
-        mReader.onload = function(e) {
-            const mContents = new Uint8Array(e.target.result);
-            try {
-                const encodedFile = encodeMessage(pContents, mContents, startBit, periodicity, mode, pFile.type);
-                displayEncodedFile(encodedFile, pFile.type);
-            } catch (error) {
-                alert("Error encoding message: " + error.message);
-            }
-        };
-        mReader.onerror = function() {
-            alert("Error reading secret message file.");
-        };
-        mReader.readAsArrayBuffer(mFile);
-    };
-    reader.onerror = function() {
-        alert("Error reading plaintext file.");
-    };
-    reader.readAsArrayBuffer(pFile);
-});
-
-function encodeMessage(pContents, mContents, startBit, periodicity, mode, fileType) {
-    for (let i = startBit; i < mContents.length; i += periodicity) {
-        if (i < pContents.length) {
-            pContents[i] ^= mContents[i % mContents.length];  // Simple XOR encryption
-        }
-    }
-    return new Blob([pContents], {type: fileType});
-}
-
-function displayEncodedFile(fileContent, fileType) {
-    const gallery = document.getElementById('gallery');
-    gallery.innerHTML = '';  // Clear previous content
-    const url = URL.createObjectURL(fileContent);
-    let element;
-    if (fileType.startsWith('image')) {
-        element = document.createElement('img');
-        element.src = url;
-    } else if (fileType.startsWith('video')) {
-        element = document.createElement('video');
-        element.src = url;
-        element.controls = true;
-    } else {
-        alert('Unsupported file type for display.');
-        return;
-    }
-    gallery.appendChild(element);
-}
-
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithRedirect, onAuthStateChanged, GoogleAuthProvider } from "firebase/auth";
@@ -85,8 +19,77 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const analytics = getAnalytics(app);  // Optional: Remove if you do not plan to use Analytics
 
+document.getElementById('file-upload-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    processFiles();
+});
 
-document.getElementById('login-btn').addEventListener('click', function() {
+function processFiles() {
+    const pFile = document.getElementById('plaintext-file').files[0];
+    const mFile = document.getElementById('secret-message-file').files[0];
+    const startBit = parseInt(document.getElementById('start-bit').value, 10);
+    const periodicity = parseInt(document.getElementById('periodicity').value, 10);
+    const mode = document.getElementById('mode').value;
+
+    if (!pFile || !mFile) {
+        alert("Please upload both a plaintext file and a message file.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const pContents = new Uint8Array(e.target.result);
+        const mReader = new FileReader();
+        mReader.onload = function(e) {
+            const mContents = new Uint8Array(e.target.result);
+            const encodedFile = encodeMessage(pContents, mContents, startBit, periodicity, mode, pFile.type);
+            displayEncodedFile(encodedFile, pFile.type);
+        };
+        mReader.onerror = () => alert("Error reading secret message file.");
+        mReader.readAsArrayBuffer(mFile);
+    };
+    reader.onerror = () => alert("Error reading plaintext file.");
+    reader.readAsArrayBuffer(pFile);
+}
+
+function encodeMessage(pContents, mContents, startBit, periodicity, mode, fileType) {
+    // Adjust processing if fileType is 'text/plain'
+    if (fileType === 'text/plain') {
+        // Special handling for text files if needed
+    }
+    for (let i = startBit; i < mContents.length; i += periodicity) {
+        if (i < pContents.length) {
+            pContents[i] ^= mContents[i % mContents.length];  // Simple XOR encryption
+        }
+    }
+    return new Blob([pContents], {type: fileType});
+}
+
+function displayEncodedFile(fileContent, fileType) {
+    const gallery = document.getElementById('gallery');
+    gallery.innerHTML = '';  // Clear previous content
+    let element;
+    if (fileType.startsWith('image')) {
+        element = document.createElement('img');
+        element.src = URL.createObjectURL(fileContent);
+    } else if (fileType.startsWith('video')) {
+        element = document.createElement('video');
+        element.src = URL.createObjectURL(fileContent);
+        element.controls = true;
+    } else if (fileType === 'text/plain') {
+        element = document.createElement('textarea');
+        element.textContent = new TextDecoder("utf-8").decode(fileContent);
+        element.rows = 10;
+        element.cols = 50;
+        element.disabled = true;  // Make it read-only
+    } else {
+        alert('Unsupported file type for display.');
+        return;
+    }
+    gallery.appendChild(element);
+}
+
+document.getElementById('login-btn').addEventListener('click', () => {
     const provider = new GoogleAuthProvider();
     signInWithRedirect(auth, provider);
 });
@@ -94,28 +97,16 @@ document.getElementById('login-btn').addEventListener('click', function() {
 onAuthStateChanged(auth, (user) => {
     const loginSection = document.getElementById('login-section');
     const uploadSection = document.getElementById('upload-section');
-    if (user) {
-        console.log('User logged in: ', user.displayName);
-        uploadSection.style.display = 'block';
-        loginSection.style.display = 'none';
-    } else {
-        console.log('User not logged in.');
-        uploadSection.style.display = 'none';
-        loginSection.style.display = 'block';
-    }
-});
-document.getElementById('login-btn').addEventListener('click', function() {
-    const provider = new GoogleAuthProvider();
-    signInWithRedirect(auth, provider);
-});
-
-onAuthStateChanged(auth, (user) => {
     const userInfoDisplay = document.getElementById('user-info');
     if (user) {
         console.log('User logged in: ', user.displayName);
         userInfoDisplay.textContent = `Logged in as: ${user.displayName}`;
+        uploadSection.style.display = 'block';
+        loginSection.style.display = 'none';
     } else {
         console.log('User not logged in.');
         userInfoDisplay.textContent = 'Not logged in';
+        uploadSection.style.display = 'none';
+        loginSection.style.display = 'block';
     }
 });
