@@ -18,3 +18,17 @@ body {
     width: 150px;
     height: auto;
 }
+#login-section, #upload-section, #gallery-section {
+    margin-bottom: 20px;
+}
+#login-btn {
+    background-color: #4285F4; /* Google blue */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+#login-btn:hover {
+    background-color: #357ae8;
+}
