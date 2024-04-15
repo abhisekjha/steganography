@@ -32,14 +32,24 @@
     firebase.initializeApp(firebaseConfig);
     firebase.auth().onAuthStateChanged(function(user) {
       if (user) {
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('tabs').style.display = 'block';
-        document.getElementById('my-tab-content').style.display = 'block';
-      } else {
-        document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('tabs').style.display = 'none';
-        document.getElementById('my-tab-content').style.display = 'none';
-      }
+          // User is signed in
+          if (user.emailVerified) {
+            // User's email is verified, show tab content
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('tabs').style.display = 'block';
+            document.getElementById('my-tab-content').style.display = 'block';
+          } else {
+            // User's email is not verified, show login form only
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('tabs').style.display = 'none';
+            document.getElementById('my-tab-content').style.display = 'none';
+          }
+        } else {
+          // No user is signed in, show login form only
+          document.getElementById('loginForm').style.display = 'block';
+          document.getElementById('tabs').style.display = 'none';
+          document.getElementById('my-tab-content').style.display = 'none';
+        }
     });
   </script>
 </head>
@@ -66,113 +76,111 @@
       </form>
     </div>
     
-
     <ul class="nav nav-tabs hidden" id="tabs" data-tabs="tabs">
       <li role="presentation" class="active"><a href="#encode" data-toggle="tab">Encode</a></li>
       <li role="presentation"><a href="#decode" data-toggle="tab">Decode</a></li>
     </ul>
 
     <div id="my-tab-content" class="tab-content hidden">
-        <div class="tab-pane active" id="encode">
-          <div>
-            <h2>Encode message</h2>
-            <form class="form" id="encodeForm">
-              <div class="form-group">
-                <label>Plaintext File (Carrier):</label>
-                <input class="form-control" type="file" name="plaintextFile" onchange="previewEncodeImage()">
-              </div>
-      
-              <div class="form-group">
-                <label>Message File:</label>
-                <input class="form-control" type="file" name="messageFile" required>
-              </div>
-      
-              <div class="form-group">
-                <label for="startBit">Start Bit (S):</label>
-                <input type="number" class="form-control" id="startBit" placeholder="Enter starting bit number">
-              </div>
-      
-              <div class="form-group">
-                <label for="periodicity">Periodicity (L):</label>
-                <input type="number" class="form-control" id="periodicity" placeholder="Enter bit replacement periodicity">
-              </div>
-      
-              <div class="form-group">
-                <label for="mode">Mode of Operation (C):</label>
-                <select class="form-control" id="mode">
-                  <option value="simple">Simple</option>
-                  <option value="complex">Complex (Variable L)</option>
-                </select>
-              </div>
-      
-              <div class="form-group">
-                <button type="submit" class="btn btn-default pull-right" onclick="encodeMessage()">Encode</button>
-              </div>
-            </form>
-            <div class="clearfix"></div>
-          </div>
-      
-          <div class="error" style="display: none;"></div>
-          <div class="binary" style="display: none;">
-            <h3>Binary representation of your message</h3>
-            <textarea class="form-control message" style="word-wrap:break-word;"></textarea>
-          </div>
-          <div class="images" style="display: none;">
-            <div class="original" style="display: none;">
-              <h3>Original</h3>
-              <canvas></canvas>
+      <div class="tab-pane active" id="encode">
+        <div>
+          <h2>Encode message</h2>
+          <form class="form" id="encodeForm">
+            <div class="form-group">
+              <label>Plaintext File (Carrier):</label>
+              <input class="form-control" type="file" name="plaintextFile" onchange="previewEncodeImage()">
             </div>
-            <div class="nulled" style="display: none;">
-              <h3>Normalized</h3>
-              <canvas></canvas>
+    
+            <div class="form-group">
+              <label>Message File:</label>
+              <input class="form-control" type="file" name="messageFile" required>
             </div>
-            <div class="message" style="display: none;">
-              <h3>Message hidden in <span class="glyphicon glyphicon-arrow-right"></span> save as</h3>
-              <canvas></canvas>
+    
+            <div class="form-group">
+              <label for="startBit">Start Bit (S):</label>
+              <input type="number" class="form-control" id="startBit" placeholder="Enter starting bit number">
             </div>
-          </div>
+    
+            <div class="form-group">
+              <label for="periodicity">Periodicity (L):</label>
+              <input type="number" class="form-control" id="periodicity" placeholder="Enter bit replacement periodicity">
+            </div>
+    
+            <div class="form-group">
+              <label for="mode">Mode of Operation (C):</label>
+              <select class="form-control" id="mode">
+                <option value="simple">Simple</option>
+                <option value="complex">Complex (Variable L)</option>
+              </select>
+            </div>
+    
+            <div class="form-group">
+              <button type="submit" class="btn btn-default pull-right" onclick="encodeMessage()">Encode</button>
+            </div>
+          </form>
+          <div class="clearfix"></div>
         </div>
-      
-        <div class="tab-pane" id="decode">
-          <div>
-            <h2>Decode image</h2>
-            <p class="alert alert-info">To decode a hidden message</p>
-            <form class="form">
-              <div class="form-group">
-                <input class="form-control" type="file" name="decodeFile" onchange="previewDecodeImage()">
-              </div>
-      
-              <div class="form-group">
-                <label for="decodeStartBit">Decode Start Bit (S):</label>
-                <input type="number" class="form-control" id="decodeStartBit" placeholder="Enter starting bit number for decoding">
-              </div>
-              <div class="form-group">
-                <label for="decodePeriodicity">Decode Periodicity (L):</label>
-                <input type="number" class="form-control" id="decodePeriodicity" placeholder="Enter periodicity for decoding">
-              </div>
-      
-              <div class="form-group">
-                <button class="btn btn-default pull-right" onclick="decodeMessage()">Decode</button>
-              </div>
-            </form>
-            <div class="clearfix"></div>
+    
+        <div class="error" style="display: none;"></div>
+        <div class="binary" style="display: none;">
+          <h3>Binary representation of your message</h3>
+          <textarea class="form-control message" style="word-wrap:break-word;"></textarea>
+        </div>
+        <div class="images" style="display: none;">
+          <div class="original" style="display: none;">
+            <h3>Original</h3>
+            <canvas></canvas>
           </div>
-          <div class="binary-decode" style="display: none;">
-            <h3>Hidden message</h3>
-            <textarea class="form-control message" style="word-wrap:break-word;"></textarea>
+          <div class="nulled" style="display: none;">
+            <h3>Normalized</h3>
+            <canvas></canvas>
           </div>
-          <div class="decode" style="display: none;">
-            <h3>Input</h3>
+          <div class="message" style="display: none;">
+            <h3>Message hidden in <span class="glyphicon glyphicon-arrow-right"></span> save as</h3>
             <canvas></canvas>
           </div>
         </div>
+      </div>
+    
+      <div class="tab-pane" id="decode">
+        <div>
+          <h2>Decode image</h2>
+          <p class="alert alert-info">To decode a hidden message</p>
+          <form class="form">
+            <div class="form-group">
+              <input class="form-control" type="file" name="decodeFile" onchange="previewDecodeImage()">
+            </div>
+    
+            <div class="form-group">
+              <label for="decodeStartBit">Decode Start Bit (S):</label>
+              <input type="number" class="form-control" id="decodeStartBit" placeholder="Enter starting bit number for decoding">
+            </div>
+            <div class="form-group">
+              <label for="decodePeriodicity">Decode Periodicity (L):</label>
+              <input type="number" class="form-control" id="decodePeriodicity" placeholder="Enter periodicity for decoding">
+            </div>
+    
+            <div class="form-group">
+              <button class="btn btn-default pull-right" onclick="decodeMessage()">Decode</button>
+            </div>
+          </form>
+          <div class="clearfix"></div>
+        </div>
+        <div class="binary-decode" style="display: none;">
+          <h3>Hidden message</h3>
+          <textarea class="form-control message" style="word-wrap:break-word;"></textarea>
+        </div>
+        <div class="decode" style="display: none;">
+          <h3>Input</h3>
+          <canvas></canvas>
+        </div>
+      </div>
     </div>
-      
   </div>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
-  
+
   <script type="text/javascript">
     function loginUser() {
         var email = document.getElementById('email').value;
@@ -229,7 +237,5 @@
         });
     }
     </script>
-      
-
 </body>
 </html>
