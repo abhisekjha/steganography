@@ -135,7 +135,7 @@ function displayEncodedFile(fileContent, fileType) {
 }
 
 // Handle user authentication with Firebase
-document.getElementById('login-btn').addEventListener('click', () => {
+ddocument.getElementById('login-btn').addEventListener('click', () => {
     const provider = new GoogleAuthProvider();
     signInWithRedirect(auth, provider);
 });
