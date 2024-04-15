@@ -173,20 +173,21 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
   
-  <script type="text/javascript">
-    function loginUser() {
+    <script type="text/javascript">
+  function loginUser() {
     var email = document.getElementById('email').value;
     var password = document.getElementById('password').value;
 
-    firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
-            // This block checks if the user's email is verified.
+    firebase.auth().signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // Check if the email is verified.
             if (userCredential.user.emailVerified) {
-                // Email is verified, and the user can be logged in.
                 console.log("Logged in as:", userCredential.user.email);
                 alert("You are logged in!");
-                // Here, redirect the user to another page or change the UI to show logged in state.
+                // Redirect to main content page upon successful login
+                window.location.href = "mainContent.html";
             } else {
-                // If email is not verified, log out the user immediately after login attempt.
+                // If email is not verified, log out the user and show an alert
                 firebase.auth().signOut();
                 alert("Please verify your email before logging in.");
                 console.log("Email not verified.");
@@ -196,10 +197,8 @@
             console.log("Error logging in:", error.code, error.message);
             alert("Login Failed: " + error.message);
         });
-      }
-
-    
-    function signUpUser() {
+}
+  function signUpUser() {
       var email = document.getElementById('email').value;
       var password = document.getElementById('password').value;
     
@@ -230,7 +229,5 @@
     }
     </script>
       
-
-
 </body>
 </html>

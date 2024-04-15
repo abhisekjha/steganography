@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Steganography</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f0f0f0;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    canvas {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Assignment 4: Steganography</h1>
+    </div>
+
+    <ul class="nav nav-tabs" id="tabs" data-tabs="tabs">
+      <li role="presentation" class="active"> <a href="#encode" data-toggle="tab">Encode</a></li>
+      <li role="presentation"> <a href="#decode" data-toggle="tab">Decode</a></li>
+    </ul>
+
+    <div id="my-tab-content" class="tab-content">
+      <div class="tab-pane active" id="encode">
+        <div>
+          <h2>Encode message</h2>
+          <form class="form" id = "encodeForm">
+            <div class="form-group">
+              <label>Plaintext File (Carrier):</label>
+              <input class="form-control" type="file" name="plaintextFile" onchange="previewEncodeImage()">
+            </div>
+
+            <div class="form-group">
+              <label>Message File:</label>
+              <input class="form-control" type="file" name="messageFile" required>
+          </div>
+
+          <!-- Starting Bit (S) Input -->
+            <div class="form-group">
+                <label for="startBit">Start Bit (S):</label>
+                <input type="number" class="form-control" id="startBit" placeholder="Enter starting bit number">
+            </div>
+
+            <!-- Length/Periodicity (L) Input -->
+            <div class="form-group">
+                <label for="periodicity">Periodicity (L):</label>
+                <input type="number" class="form-control" id="periodicity" placeholder="Enter bit replacement periodicity">
+            </div>
+
+            <!-- Mode of Operation (C) Input -->
+            <div class="form-group">
+                <label for="mode">Mode of Operation (C):</label>
+                <select class="form-control" id="mode">
+                    <option value="simple">Simple</option>
+                    <option value="complex">Complex (Variable L)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+              <button type = "submit" class="encode btn btn-default pull-right" onclick="encodeMessage()">Encode</button>
+            </div>
+          </form>
+          <div class="clearfix"></div>
+        </div>
+
+        <div class="error" style="display: none;"></div>
+        <div class="binary" style="display: none;">
+          <h3>Binary representation of your message</h3>
+          <textarea class="form-control message" style="word-wrap:break-word;">
+          </textarea>
+        </div>
+        <div class="images" style="display: none;">
+          <div class="original" style="display: none;">
+            <h3>Original</h3>
+            <canvas></canvas>
+          </div>
+          <div class="nulled" style="display: none;">
+            <h3>Normalized</h3>
+            <canvas></canvas>
+          </div>
+          <div class="message" style="display: none;">
+            <h3>Message hidden in <span class="glyphicon glyphicon-arrow-right"></span> save as</h3>
+            <canvas></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane" id="decode">
+        <div>
+          <h2>Decode image</h2>
+          <p class="alert alert-info">
+            To decode a hidden message</p>
+          <form class="form">
+            <div class="form-group">
+              <input class="form-control" type="file" name="decodeFile" onchange="previewDecodeImage()">
+            </div>
+            
+            <div class="form-group">
+              <label for="decodeStartBit">Decode Start Bit (S):</label>
+              <input type="number" class="form-control" id="decodeStartBit" placeholder="Enter starting bit number for decoding">
+          </div>
+          <div class="form-group">
+              <label for="decodePeriodicity">Decode Periodicity (L):</label>
+              <input type="number" class="form-control" id="decodePeriodicity" placeholder="Enter periodicity for decoding">
+          </div>      
+          
+          <div class="form-group">
+            <button class="decode btn btn-default pull-right" onclick="decodeMessage()">Decode</button>
+          </div>
+          
+          </form>
+          <div class="clearfix"></div>
+        </div>
+        <div class="binary-decode" style="display: none;">
+          <h3>Hidden message</h3>
+          <textarea class="form-control message" style="word-wrap:break-word;">
+          </textarea>
+        </div>
+        <div class="decode" style="display: none;">
+          <h3>Input</h3>
+          <canvas></canvas>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/static/script.js"></script>
+
+</body>
+</html>
