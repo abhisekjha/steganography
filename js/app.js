@@ -19,6 +19,30 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
+
+
+// Handle user authentication with Firebase
+ddocument.getElementById('login-btn').addEventListener('click', () => {
+    const provider = new GoogleAuthProvider();
+    signInWithRedirect(auth, provider);
+});
+
+onAuthStateChanged(auth, (user) => {
+    const uploadSection = document.getElementById('upload-section');
+    const userInfoDisplay = document.getElementById('user-info');
+    if (user) {
+        console.log('User logged in:', user.displayName);
+        userInfoDisplay.textContent = `Logged in as: ${user.displayName}`;
+        uploadSection.style.display = 'block';
+    } else {
+        console.log('User not logged in.');
+        userInfoDisplay.textContent = 'Not logged in';
+        uploadSection.style.display = 'none';
+    }
+});
+
+
+
 // Handle file upload form submission
 document.getElementById('file-upload-form').addEventListener('submit', async function(event) {
     event.preventDefault();
@@ -134,22 +158,3 @@ function displayEncodedFile(fileContent, fileType) {
     gallery.appendChild(element);
 }
 
-// Handle user authentication with Firebase
-ddocument.getElementById('login-btn').addEventListener('click', () => {
-    const provider = new GoogleAuthProvider();
-    signInWithRedirect(auth, provider);
-});
-
-onAuthStateChanged(auth, (user) => {
-    const uploadSection = document.getElementById('upload-section');
-    const userInfoDisplay = document.getElementById('user-info');
-    if (user) {
-        console.log('User logged in:', user.displayName);
-        userInfoDisplay.textContent = `Logged in as: ${user.displayName}`;
-        uploadSection.style.display = 'block';
-    } else {
-        console.log('User not logged in.');
-        userInfoDisplay.textContent = 'Not logged in';
-        uploadSection.style.display = 'none';
-    }
-});
