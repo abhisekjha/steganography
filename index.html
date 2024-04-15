@@ -175,23 +175,29 @@
   
   <script type="text/javascript">
     function loginUser() {
-      var email = document.getElementById('email').value;
-      var password = document.getElementById('password').value;
-    
-      firebase.auth().signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          console.log("Logged in as:", userCredential.user.email);
-          if (!userCredential.user.emailVerified) {
-            console.log("Please verify your email first");
-            alert("Please check your email inbox and verify your email before logging in.");
-            firebase.auth().signOut();
-          }
+    var email = document.getElementById('email').value;
+    var password = document.getElementById('password').value;
+
+    firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+            // This block checks if the user's email is verified.
+            if (userCredential.user.emailVerified) {
+                // Email is verified, and the user can be logged in.
+                console.log("Logged in as:", userCredential.user.email);
+                alert("You are logged in!");
+                // Here, redirect the user to another page or change the UI to show logged in state.
+            } else {
+                // If email is not verified, log out the user immediately after login attempt.
+                firebase.auth().signOut();
+                alert("Please verify your email before logging in.");
+                console.log("Email not verified.");
+            }
         })
         .catch((error) => {
-          console.log("Error:", error.code, error.message);
-          alert("Login Failed: " + error.message);
+            console.log("Error logging in:", error.code, error.message);
+            alert("Login Failed: " + error.message);
         });
-    }
+      }
+
     
     function signUpUser() {
       var email = document.getElementById('email').value;
