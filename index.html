@@ -173,31 +173,33 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
   
-    <script type="text/javascript">
-  function loginUser() {
-    var email = document.getElementById('email').value;
-    var password = document.getElementById('password').value;
-
-    firebase.auth().signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            // Check if the email is verified.
-            if (userCredential.user.emailVerified) {
-                console.log("Logged in as:", userCredential.user.email);
-                alert("You are logged in!");
-                // Redirect to main content page upon successful login
-                window.location.href = "mainContent.html";
-            } else {
-                // If email is not verified, log out the user and show an alert
-                firebase.auth().signOut();
-                alert("Please verify your email before logging in.");
-                console.log("Email not verified.");
-            }
-        })
-        .catch((error) => {
-            console.log("Error logging in:", error.code, error.message);
-            alert("Login Failed: " + error.message);
-        });
-}
+  <script type="text/javascript">
+    function loginUser() {
+        var email = document.getElementById('email').value;
+        var password = document.getElementById('password').value;
+    
+        firebase.auth().signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                // Check if the email is verified.
+                if (userCredential.user.emailVerified) {
+                    console.log("Logged in as:", userCredential.user.email);
+                    alert("You are logged in!");
+                    // Redirect to main content page upon successful login
+                    window.location.href = "mainContent.html";
+                } else {
+                    // If email is not verified, log out the user and show an alert
+                    firebase.auth().signOut();
+                    alert("Please verify your email before logging in.");
+                    console.log("Email not verified.");
+                }
+            })
+            .catch((error) => {
+                console.log("Error logging in:", error.code, error.message);
+                alert("Login Failed: " + error.message);
+            });
+    }
+    </script>
+    
   function signUpUser() {
       var email = document.getElementById('email').value;
       var password = document.getElementById('password').value;
@@ -229,5 +231,6 @@
     }
     </script>
       
+
 </body>
 </html>
