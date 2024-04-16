@@ -43,18 +43,19 @@ function decodeMessage(event) {
 
     var decodeStartBit = parseInt(document.getElementById("decodeStartBit").value);
     var decodePeriodicity = parseInt(document.getElementById("decodePeriodicity").value);
-    var fileExtension = decodeFile.name.split('.').pop();
+    var outputExtension = document.getElementById("outputExtension").value; // Get the user-selected file extension
 
     var reader = new FileReader();
     reader.onload = function(e) {
         var carrierBinary = fileToBinary(e.target.result);
         var decodedBinary = decode(carrierBinary, decodeStartBit, decodePeriodicity);
         var decodedData = binaryToFile(decodedBinary);
-        var mimeType = getMimeTypeByExtension(fileExtension);
-        saveDataToFile(decodedData, "decoded_output." + fileExtension, mimeType);
+        var mimeType = getMimeTypeByExtension(outputExtension); // Use the selected extension for MIME type
+        saveDataToFile(decodedData, "decoded_output." + outputExtension, mimeType); // Use the selected extension in the filename
     };
     reader.readAsBinaryString(decodeFile);
 }
+
 
 // Helper functions and utilities
 function getMimeTypeByExtension(ext) {
