@@ -107,7 +107,20 @@
           <div class="form-group">
               <label for="decodePeriodicity">Decode Periodicity (L):</label>
               <input type="number" class="form-control" id="decodePeriodicity" placeholder="Enter periodicity for decoding">
-          </div>      
+          </div>     
+          <div class="form-group">
+            <label for="outputExtension">Output File Extension:</label>
+            <select class="form-control" id="outputExtension">
+              <option value="jpg">JPG</option>
+              <option value="png">PNG</option>
+              <option value="txt">Text (txt)</option>
+              <option value="pdf">PDF</option>
+              <option value="mp4">MP4</option>
+              <option value="mov">MOV</option>
+              <option value="wav">WAV</option>
+              <!-- Add other extensions as needed -->
+            </select>
+          </div>           
           
           <div class="form-group">
             <button type="button" class="decode btn btn-default pull-right" onclick="decodeMessage(event)">Decode</button>
