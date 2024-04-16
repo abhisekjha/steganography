@@ -1,71 +1,61 @@
-// Function to handle encoding of message
+/ Function to handle encoding of message
 function encodeMessage(event) {
-    event.preventDefault();
-    const carrierFileInput = document.getElementsByName("plaintextFile")[0];
-    const messageFile = document.getElementsByName("messageFile")[0].files[0];
-    const carrierFile = carrierFileInput.files[0];
+    event.preventDefault();  // Prevent form submission and page reload
+
+    var carrierFileInput = document.getElementsByName("plaintextFile")[0];
+    var messageFile = document.getElementsByName("messageFile")[0].files[0];
+    var carrierFile = carrierFileInput.files[0];
     if (!carrierFile || !messageFile) {
         alert("Please select both a carrier file and a message file.");
         return;
     }
 
-    const startBit = parseInt(document.getElementById("startBit").value, 10);
-    const periodicity = parseInt(document.getElementById("periodicity").value, 10);
-    if (Number.isNaN(startBit) || Number.isNaN(periodicity) || startBit < 0 || periodicity <= 0) {
-        alert("Invalid start bit or periodicity.");
-        return;
-    }
+    var startBit = parseInt(document.getElementById("startBit").value);
+    var periodicity = parseInt(document.getElementById("periodicity").value);
+    var fileExtension = carrierFile.name.split('.').pop();
 
-    const fileExtension = carrierFile.name.split('.').pop();
-    const reader = new FileReader();
+    var reader = new FileReader();
     reader.onload = function(e) {
-        try {
-            const carrierBinary = fileToBinary(e.target.result);
-            const messageReader = new FileReader();
-            messageReader.onload = function(e) {
-                try {
-                    const messageBinary = fileToBinary(e.target.result);
-                    const encodedBinary = encode(carrierBinary, messageBinary, startBit, periodicity);
-                    const encodedData = binaryToFile(encodedBinary);
-                    const mimeType = getMimeTypeByExtension(fileExtension);
-                    saveDataToFile(encodedData, `${carrierFile.name.replace(/\.[^/.]+$/, "")}_encoded.${fileExtension}`, mimeType);
-                } catch (error) {
-                    alert(`Error processing message file: ${error.message}`);
-                }
-            };
-            messageReader.readAsBinaryString(messageFile);
-        } catch (error) {
-            alert(`Error processing carrier file: ${error.message}`);
-        }
+        var carrierBinary = fileToBinary(e.target.result);
+        var messageReader = new FileReader();
+        messageReader.onload = function(e) {
+            var messageBinary = fileToBinary(e.target.result);
+            var encodedBinary = encode(carrierBinary, messageBinary, startBit, periodicity);
+            var encodedData = binaryToFile(encodedBinary);
+            var mimeType = getMimeTypeByExtension(fileExtension);
+            saveDataToFile(encodedData, carrierFile.name.replace(/\.[^/.]+$/, "") + "_encoded." + fileExtension, mimeType);
+        };
+        messageReader.readAsBinaryString(messageFile);
     };
     reader.readAsBinaryString(carrierFile);
 }
 
 // Function to handle decoding of message
 function decodeMessage(event) {
-    event.preventDefault();
+    event.preventDefault();  // Prevent form submission and page reload
 
-    const decodeFileInput = document.getElementsByName("decodeFile")[0];
-    const decodeFile = decodeFileInput.files[0];
+    var decodeFileInput = document.getElementsByName("decodeFile")[0];
+    var decodeFile = decodeFileInput.files[0];
     if (!decodeFile) {
         alert("Please select a file to decode.");
         return;
     }
 
-    const decodeStartBit = parseInt(document.getElementById("decodeStartBit").value, 10);
-    const decodePeriodicity = parseInt(document.getElementById("decodePeriodicity").value, 10);
-    const outputExtension = document.getElementById("outputExtension").value;
+    var decodeStartBit = parseInt(document.getElementById("decodeStartBit").value);
+    var decodePeriodicity = parseInt(document.getElementById("decodePeriodicity").value);
+    var outputExtension = document.getElementById("outputExtension").value; // Get the user-selected file extension
 
-    const reader = new FileReader();
+    var reader = new FileReader();
     reader.onload = function(e) {
-        const carrierBinary = fileToBinary(e.target.result);
-        const decodedBinary = decode(carrierBinary, decodeStartBit, decodePeriodicity);
-        const decodedData = binaryToFile(decodedBinary);
-        const mimeType = getMimeTypeByExtension(outputExtension);
-        saveDataToFile(decodedData, `decoded_output.${outputExtension}`, mimeType);
+        var carrierBinary = fileToBinary(e.target.result);
+        var decodedBinary = decode(carrierBinary, decodeStartBit, decodePeriodicity);
+        var decodedData = binaryToFile(decodedBinary);
+        var mimeType = getMimeTypeByExtension(outputExtension); // Use the selected extension for MIME type
+        saveDataToFile(decodedData, "decoded_output." + outputExtension, mimeType); // Use the selected extension in the filename
     };
     reader.readAsBinaryString(decodeFile);
 }
+
 
 // Helper functions and utilities
 function getMimeTypeByExtension(ext) {
@@ -85,42 +75,46 @@ function getMimeTypeByExtension(ext) {
 }
 
 function fileToBinary(fileData) {
-    return Array.from(new Uint8Array(fileData))
-        .map(byte => byte.toString(2).padStart(8, '0')).join('');
+    var binary = '';
+    for (var i = 0; i < fileData.length; i++) {
+        binary += fileData.charCodeAt(i).toString(2).padStart(8, '0');
+    }
+    return binary;
 }
 
 function binaryToFile(binaryData) {
-    const bytes = new Uint8Array(binaryData.length / 8);
-    for (let i = 0; i < binaryData.length; i += 8) {
-        bytes[i / 8] = parseInt(binaryData.substring(i, i + 8), 2);
+    var fileData = new Uint8Array(binaryData.length / 8);
+    for (var i = 0; i < binaryData.length; i += 8) {
+        fileData[i / 8] = parseInt(binaryData.substr(i, 8), 2);
     }
-    return bytes.buffer;
+    return fileData;
 }
 
 function saveDataToFile(data, fileName, mimeType) {
-    const blob = new Blob([data], {type: mimeType});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    var blob = new Blob([data], { type: mimeType });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
     a.href = url;
     a.download = fileName;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    window.URL.revokeObjectURL(url);
 }
 
 // Core logic functions for steganography
 function encode(carrierBinary, messageBinary, startBit, periodicity) {
-    let encodedMessage = carrierBinary;
-    for (let i = startBit; i < carrierBinary.length && i < messageBinary.length * periodicity; i += periodicity) {
-        encodedMessage = encodedMessage.substring(0, i) + messageBinary[Math.floor((i - startBit) / periodicity)] + encodedMessage.substring(i + 1);
+    var encodedMessage = carrierBinary;  // Start with a copy of the carrier binary
+    var messageIndex = 0;
+    for (var i = startBit; i < carrierBinary.length; i += periodicity) {
+        if (messageIndex >= messageBinary.length) break;
+        encodedMessage = encodedMessage.substr(0, i) + messageBinary[messageIndex++] + encodedMessage.substr(i + 1);
     }
     return encodedMessage;
 }
 
 function decode(carrierBinary, startBit, periodicity) {
-    let decodedMessage = '';
-    for (let i = startBit; i < carrierBinary.length; i += periodicity) {
+    var decodedMessage = '';
+    for (var i = startBit; i < carrierBinary.length; i += periodicity) {
         decodedMessage += carrierBinary[i];
     }
     return decodedMessage;
