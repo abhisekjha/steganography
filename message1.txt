@@ -1,1 +1,0 @@
-This is Steganography assignment. This is the secret message and it starts with "T" and ends with "." .
