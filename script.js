@@ -1,163 +1,94 @@
-$('button.encode, button.decode').click(function(event) {
-    event.preventDefault();
-});
-  
-function previewDecodeImage() {
-    var file = document.querySelector('input[name=decodeFile]').files[0];
-  
-    previewImage(file, ".decode canvas", function() {
-        $(".decode").fadeIn();
-    });
-}
-  
-function previewEncodeImage() {
-    var file = document.querySelector("input[name=plaintextFile]").files[0];
-  
-    $(".images .nulled").hide();
-    $(".images .message").hide();
-  
-    previewImage(file, ".original canvas", function() {
-        $(".images .original").fadeIn();
-        $(".images").fadeIn();
-    });
-}
-  
-function previewImage(file, canvasSelector, callback) {
-    var reader = new FileReader();
-    var image = new Image;
-    var $canvas = $(canvasSelector);
-    var context = $canvas[0].getContext('2d');
-  
-    if (file) {
-        reader.readAsDataURL(file);
-    }
-  
-    reader.onloadend = function () {
-        image.src = URL.createObjectURL(file);
-  
-        image.onload = function() {
-            $canvas.prop({
-                'width': image.width,
-                'height': image.height
-            });
-  
-            context.drawImage(image, 0, 0);
-  
-            callback();
-        }
-    }
-}
-  
+// Function to handle encoding of message
 function encodeMessage() {
-    $(".error").hide();
-    $(".binary").hide();
+    // Get input values
+    var plaintextFile = document.getElementsByName("plaintextFile")[0].files[0];
+    var messageFile = document.getElementsByName("messageFile")[0].files[0];
+    var startBit = parseInt(document.getElementById("startBit").value);
+    var periodicity = parseInt(document.getElementById("periodicity").value);
   
-    var textFile = document.querySelector("input[name=messageFile]").files[0];
-    var startBit = parseInt($("#startBit").val());
-    var periodicity = parseInt($("#periodicity").val());
-    var mode = $("#mode").val();
-  
+    // Read files
     var reader = new FileReader();
-    reader.readAsBinaryString(textFile);
-  
-    reader.onloadend = function () {
-        var binaryMessage = reader.result;
-  
-        var $originalCanvas = $('.original canvas');
-        var $nulledCanvas = $('.nulled canvas');
-        var $messageCanvas = $('.message canvas');
-  
-        var originalContext = $originalCanvas[0].getContext("2d");
-        var nulledContext = $nulledCanvas[0].getContext("2d");
-        var messageContext = $messageCanvas[0].getContext("2d");
-  
-        var width = $originalCanvas[0].width;
-        var height = $originalCanvas[0].height;
-  
-        // Check if the image is big enough to hide the message
-        if ((binaryMessage.length) > (width * height * 3)) {
-            $(".error")
-                .text("Message too long for chosen image....")
-                .fadeIn();
-  
-            return;
-        }
-  
-        $nulledCanvas.prop({
-            'width': width,
-            'height': height
-        });
-  
-        $messageCanvas.prop({
-            'width': width,
-            'height': height
-        });
-  
-        // Normalize the original image and draw it
-        var original = originalContext.getImageData(0, 0, width, height);
-        var pixel = original.data;
-        for (var i = 0, n = pixel.length; i < n; i += 4) {
-            for (var offset = 0; offset < 3; offset++) {
-                if (pixel[i + offset] % 2 != 0) {
-                    pixel[i + offset]--;
-                }
-            }
-        }
-        nulledContext.putImageData(original, 0, 0);
-  
-        // Apply the binary string to the image and draw it
-        var message = nulledContext.getImageData(0, 0, width, height);
-        pixel = message.data;
-        counter = 0;
-        var changePeriod = 0;
-        for (var i = 0, n = pixel.length; i < n; i += 4) {
-            for (var offset = 0; offset < 3; offset++) {
-                if (counter < binaryMessage.length && changePeriod === 0) {
-                    pixel[i + offset] += parseInt(binaryMessage[counter]);
-                    counter++;
-                    changePeriod = periodicity;
-                } else {
-                    changePeriod--;
-                }
-            }
-        }
-        messageContext.putImageData(message, 0, 0);
-  
-        $(".binary").fadeIn();
-        $(".images .nulled").fadeIn();
-        $(".images .message").fadeIn();
+    reader.onload = function(e) {
+      var plaintextBinary = fileToBinary(e.target.result);
+      var messageReader = new FileReader();
+      messageReader.onload = function(e) {
+        var messageBinary = fileToBinary(e.target.result);
+        // Encode message
+        var encodedMessage = encode(plaintextBinary, messageBinary, startBit, periodicity);
+        // Convert encoded message back to original format
+        var encodedFile = binaryToFile(encodedMessage);
+        // Save or display the encoded file
+      };
+      messageReader.readAsBinaryString(messageFile);
     };
-};
+    reader.readAsBinaryString(plaintextFile);
+  }
   
-function decodeMessage() {
-    var $originalCanvas = $('.decode canvas');
-    var originalContext = $originalCanvas[0].getContext("2d");
+  // Function to handle decoding of message
+  function decodeMessage() {
+    // Get input values
+    var decodeFile = document.getElementsByName("decodeFile")[0].files[0];
+    var decodeStartBit = parseInt(document.getElementById("decodeStartBit").value);
+    var decodePeriodicity = parseInt(document.getElementById("decodePeriodicity").value);
   
-    var original = originalContext.getImageData(0, 0, $originalCanvas.width(), $originalCanvas.height());
-    var binaryMessage = "";
-    var pixel = original.data;
-    for (var i = 0, n = pixel.length; i < n; i += 4) {
-        for (var offset = 0; offset < 3; offset++) {
-            var value = 0;
-            if (pixel[i + offset] % 2 != 0) {
-                value = 1;
-            }
+    // Read decode file
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var decodeBinary = fileToBinary(e.target.result);
+      // Decode message
+      var decodedMessage = decode(decodeBinary, decodeStartBit, decodePeriodicity);
+      // Convert decoded message back to original format
+      var decodedFile = binaryToFile(decodedMessage);
+      // Save or display the decoded file
+    };
+    reader.readAsBinaryString(decodeFile);
+  }
   
-            binaryMessage += value;
-        }
+  // Helper function to convert file to binary string
+  function fileToBinary(fileData) {
+    var binary = '';
+    for (var i = 0; i < fileData.length; i++) {
+      binary += fileData.charCodeAt(i).toString(2).padStart(8, '0');
+    }
+    return binary;
+  }
+  
+  // Helper function to convert binary string to file
+  function binaryToFile(binaryData) {
+    var fileData = '';
+    for (var i = 0; i < binaryData.length; i += 8) {
+      fileData += String.fromCharCode(parseInt(binaryData.substr(i, 8), 2));
+    }
+    return fileData;
+  }
+  
+  // Function to encode message into carrier using start bit and periodicity
+// Function to encode message into carrier using start bit and periodicity
+function encode(carrierBinary, messageBinary, startBit, periodicity) {
+    // Initialize variables
+    var encodedMessage = '';
+  
+    // Copy the carrier binary to the encoded message
+    encodedMessage = carrierBinary;
+  
+    // Counter for tracking the position in the message binary
+    var messageIndex = 0;
+  
+    // Loop through the carrier binary, starting from the specified start bit
+    for (var i = startBit; i < carrierBinary.length; i += periodicity) {
+      // Replace the bit in the carrier with the bit from the message
+      encodedMessage = encodedMessage.substr(0, i) + messageBinary[messageIndex] + encodedMessage.substr(i + 1);
+      
+      // Move to the next bit in the message binary
+      messageIndex++;
+  
+      // If we have reached the end of the message binary, break the loop
+      if (messageIndex >= messageBinary.length) {
+        break;
+      }
     }
   
-    var output = "";
-    for (var i = 0; i < binaryMessage.length; i += 8) {
-        var c = 0;
-        for (var j = 0; j < 8; j++) {
-            c <<= 1;
-            c |= parseInt(binaryMessage[i + j]);
-        }
+    // Return the encoded message
+    return encodedMessage;
+  }
   
-        output += String.fromCharCode(c);
-    }
-  
-    $('.binary-decode textarea').text(output);
-    $('.binary-decode').fadeIn();
-};
