@@ -1,7 +1,8 @@
 // Function to handle encoding of message
-function encodeMessage() {
-    // Get input values
-    var carrierFile = document.getElementsByName("carrierFile")[0].files[0];
+function encodeMessage(event) {
+    event.preventDefault();  // Prevent form submission and page reload
+
+    var carrierFile = document.getElementsByName("plaintextFile")[0].files[0];
     var messageFile = document.getElementsByName("messageFile")[0].files[0];
     var startBit = parseInt(document.getElementById("startBit").value);
     var periodicity = parseInt(document.getElementById("periodicity").value);
@@ -24,9 +25,10 @@ function encodeMessage() {
 }
 
 // Function to handle decoding of message
-function decodeMessage() {
-    // Get input values
-    var carrierFile = document.getElementsByName("carrierFile")[0].files[0];
+function decodeMessage(event) {
+    event.preventDefault();  // Prevent form submission and page reload
+
+    var carrierFile = document.getElementsByName("decodeFile")[0].files[0];
     var decodeStartBit = parseInt(document.getElementById("decodeStartBit").value);
     var decodePeriodicity = parseInt(document.getElementById("decodePeriodicity").value);
   

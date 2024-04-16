@@ -64,7 +64,7 @@
             </div>
 
             <div class="form-group">
-              <button type = "submit" class="encode btn btn-default pull-right" onclick="encodeMessage()">Encode</button>
+              <button type="button" class="encode btn btn-default pull-right" onclick="encodeMessage(event)">Encode</button>
             </div>
           </form>
           <div class="clearfix"></div>
@@ -94,9 +94,7 @@
 
       <div class="tab-pane" id="decode">
         <div>
-          <h2>Decode image</h2>
-          <p class="alert alert-info">
-            To decode a hidden message</p>
+          <h2>decode</h2>
           <form class="form">
             <div class="form-group">
               <input class="form-control" type="file" name="decodeFile" onchange="previewDecodeImage()">
@@ -112,7 +110,7 @@
           </div>      
           
           <div class="form-group">
-            <button class="decode btn btn-default pull-right" onclick="decodeMessage()">Decode</button>
+            <button type="button" class="decode btn btn-default pull-right" onclick="decodeMessage(event)">Decode</button>
           </div>
           
           </form>
