@@ -1,7 +1,6 @@
 // Function to handle encoding of message
 function encodeMessage(event) {
-    event.preventDefault();  // Prevent form submission and page reload
-
+    event.preventDefault();
     var carrierFileInput = document.getElementsByName("plaintextFile")[0];
     var messageFile = document.getElementsByName("messageFile")[0].files[0];
     var carrierFile = carrierFileInput.files[0];
@@ -12,20 +11,34 @@ function encodeMessage(event) {
 
     var startBit = parseInt(document.getElementById("startBit").value);
     var periodicity = parseInt(document.getElementById("periodicity").value);
-    var fileExtension = carrierFile.name.split('.').pop();
+    if (isNaN(startBit) || isNaN(periodicity) || startBit < 0 || periodicity <= 0) {
+        alert("Invalid start bit or periodicity.");
+        return;
+    }
 
+    var fileExtension = carrierFile.name.split('.').pop();
     var reader = new FileReader();
     reader.onload = function(e) {
-        var carrierBinary = fileToBinary(e.target.result);
-        var messageReader = new FileReader();
-        messageReader.onload = function(e) {
-            var messageBinary = fileToBinary(e.target.result);
-            var encodedBinary = encode(carrierBinary, messageBinary, startBit, periodicity);
-            var encodedData = binaryToFile(encodedBinary);
-            var mimeType = getMimeTypeByExtension(fileExtension);
-            saveDataToFile(encodedData, carrierFile.name.replace(/\.[^/.]+$/, "") + "_encoded." + fileExtension, mimeType);
-        };
-        messageReader.readAsBinaryString(messageFile);
+        // Error handling for reading the carrier file
+        try {
+            var carrierBinary = fileToBinary(e.target.result);
+            var messageReader = new FileReader();
+            messageReader.onload = function(e) {
+                // Error handling for reading the message file
+                try {
+                    var messageBinary = fileToBinary(e.target.result);
+                    var encodedBinary = encode(carrierBinary, messageBinary, startBit, periodicity);
+                    var encodedData = binaryToFile(encodedBinary);
+                    var mimeType = getMimeTypeByExtension(fileExtension);
+                    saveDataToFile(encodedData, carrierFile.name.replace(/\.[^/.]+$/, "") + "_encoded." + fileExtension, mimeType);
+                } catch (error) {
+                    alert("Error processing message file: " + error.message);
+                }
+            };
+            messageReader.readAsBinaryString(messageFile);
+        } catch (error) {
+            alert("Error processing carrier file: " + error.message);
+        }
     };
     reader.readAsBinaryString(carrierFile);
 }
