@@ -19,15 +19,14 @@ function encodeMessage(event) {
     var fileExtension = carrierFile.name.split('.').pop();
     var reader = new FileReader();
     reader.onload = function(e) {
-        // Error handling for reading the carrier file
         try {
             var carrierBinary = fileToBinary(e.target.result);
             var messageReader = new FileReader();
             messageReader.onload = function(e) {
-                // Error handling for reading the message file
                 try {
                     var messageBinary = fileToBinary(e.target.result);
-                    var encodedBinary = encode(carrierBinary, messageBinary, startBit, periodicity);
+                    var messageLength = messageBinary.length;  // Capture the message length
+                    var encodedBinary = encode(carrierBinary, messageBinary, startBit, periodicity, messageLength);
                     var encodedData = binaryToFile(encodedBinary);
                     var mimeType = getMimeTypeByExtension(fileExtension);
                     saveDataToFile(encodedData, carrierFile.name.replace(/\.[^/.]+$/, "") + "_encoded." + fileExtension, mimeType);
@@ -45,7 +44,7 @@ function encodeMessage(event) {
 
 // Function to handle decoding of message
 function decodeMessage(event) {
-    event.preventDefault();  // Prevent form submission and page reload
+    event.preventDefault();
 
     var decodeFileInput = document.getElementsByName("decodeFile")[0];
     var decodeFile = decodeFileInput.files[0];
@@ -56,19 +55,19 @@ function decodeMessage(event) {
 
     var decodeStartBit = parseInt(document.getElementById("decodeStartBit").value);
     var decodePeriodicity = parseInt(document.getElementById("decodePeriodicity").value);
-    var outputExtension = document.getElementById("outputExtension").value; // Get the user-selected file extension
+    var outputExtension = document.getElementById("outputExtension").value;
+    var messageLength = parseInt(prompt("Enter the length of the message to decode:"));
 
     var reader = new FileReader();
     reader.onload = function(e) {
         var carrierBinary = fileToBinary(e.target.result);
-        var decodedBinary = decode(carrierBinary, decodeStartBit, decodePeriodicity);
+        var decodedBinary = decode(carrierBinary, decodeStartBit, decodePeriodicity, messageLength);
         var decodedData = binaryToFile(decodedBinary);
-        var mimeType = getMimeTypeByExtension(outputExtension); // Use the selected extension for MIME type
-        saveDataToFile(decodedData, "decoded_output." + outputExtension, mimeType); // Use the selected extension in the filename
+        var mimeType = getMimeTypeByExtension(outputExtension);
+        saveDataToFile(decodedData, "decoded_output." + outputExtension, mimeType);
     };
     reader.readAsBinaryString(decodeFile);
 }
-
 
 // Helper functions and utilities
 function getMimeTypeByExtension(ext) {
@@ -115,19 +114,20 @@ function saveDataToFile(data, fileName, mimeType) {
 }
 
 // Core logic functions for steganography
-function encode(carrierBinary, messageBinary, startBit, periodicity) {
-    var encodedMessage = carrierBinary;  // Start with a copy of the carrier binary
+function encode(carrierBinary, messageBinary, startBit, periodicity, messageLength) {
+    var encodedMessage = carrierBinary;  
     var messageIndex = 0;
-    for (var i = startBit; i < carrierBinary.length; i += periodicity) {
+    for (var i = startBit; i < startBit + periodicity * messageLength; i += periodicity) {
         if (messageIndex >= messageBinary.length) break;
         encodedMessage = encodedMessage.substr(0, i) + messageBinary[messageIndex++] + encodedMessage.substr(i + 1);
     }
     return encodedMessage;
 }
 
-function decode(carrierBinary, startBit, periodicity) {
+function decode(carrierBinary, startBit, periodicity, messageLength) {
     var decodedMessage = '';
-    for (var i = startBit; i < carrierBinary.length; i += periodicity) {
+    var maxIndex = Math.min(carrierBinary.length, startBit + periodicity * messageLength);
+    for (var i = startBit; i < maxIndex; i += periodicity) {
         decodedMessage += carrierBinary[i];
     }
     return decodedMessage;
