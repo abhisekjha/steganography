@@ -1,5 +1,10 @@
+# Steganography Application
+
 ## Overview
 This web-based Steganography application allows users to securely encode and decode messages within various file formats such as images, videos, and audio files. It includes user authentication features to secure access and ensure that only authorized users can encode or decode messages.
+
+## Access
+Visit the live application here: [Steganography App](https://www.abhisekjha.com.np/steganography/)
 
 ## Key Features
 - **User Authentication**: Secure login and registration system with email verification.
