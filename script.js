@@ -62,7 +62,6 @@ function encodeMessage() {
     return fileData;
   }
   
-  // Function to encode message into carrier using start bit and periodicity
 // Function to encode message into carrier using start bit and periodicity
 function encode(carrierBinary, messageBinary, startBit, periodicity) {
     // Initialize variables
@@ -91,4 +90,18 @@ function encode(carrierBinary, messageBinary, startBit, periodicity) {
     // Return the encoded message
     return encodedMessage;
   }
-  
+ // Function to decode message from carrier using start bit and periodicity
+function decode(carrierBinary, startBit, periodicity) {
+    // Initialize variables
+    var decodedMessage = '';
+
+    // Loop through the carrier binary, starting from the specified start bit
+    for (var i = startBit; i < carrierBinary.length; i += periodicity) {
+        // Extract the bit from the carrier and add it to the decoded message
+        decodedMessage += carrierBinary[i];
+    }
+
+    // Return the decoded message
+    return decodedMessage;
+}
+ 
