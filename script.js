@@ -1,4 +1,3 @@
-/ Function to handle encoding of message
 function encodeMessage(event) {
     event.preventDefault();  // Prevent form submission and page reload
 
