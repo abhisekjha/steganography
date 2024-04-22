@@ -75,7 +75,7 @@ Visit the live application here: [Steganography App](https://www.abhisekjha.com.
 - Large files may take significant time to encode or decode and could impact browser performance. Optimization for handling large files efficiently is planned for future updates.
 
 ## Contributing
-Feel free to fork this repository and submit pull requests to contribute to its development. For major changes, please open an issue first to discuss what you would like to change.
+Feel free to fork this repository and submit pull requests to contribute to its development.
 
 Ensure to update tests as appropriate.
 
