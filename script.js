@@ -1,5 +1,5 @@
 function encodeMessage(event) {
-    event.preventDefault();  // Prevent form submission and page reload
+    event.preventDefault();
 
     var carrierFileInput = document.getElementsByName("plaintextFile")[0];
     var messageFile = document.getElementsByName("messageFile")[0].files[0];
@@ -29,9 +29,9 @@ function encodeMessage(event) {
     reader.readAsBinaryString(carrierFile);
 }
 
-// Function to handle decoding of message
+// handle decoding of message
 function decodeMessage(event) {
-    event.preventDefault();  // Prevent form submission and page reload
+    event.preventDefault();  
 
     var decodeFileInput = document.getElementsByName("decodeFile")[0];
     var decodeFile = decodeFileInput.files[0];
@@ -42,15 +42,15 @@ function decodeMessage(event) {
 
     var decodeStartBit = parseInt(document.getElementById("decodeStartBit").value);
     var decodePeriodicity = parseInt(document.getElementById("decodePeriodicity").value);
-    var outputExtension = document.getElementById("outputExtension").value; // Get the user-selected file extension
+    var outputExtension = document.getElementById("outputExtension").value;
 
     var reader = new FileReader();
     reader.onload = function(e) {
         var carrierBinary = fileToBinary(e.target.result);
         var decodedBinary = decode(carrierBinary, decodeStartBit, decodePeriodicity);
         var decodedData = binaryToFile(decodedBinary);
-        var mimeType = getMimeTypeByExtension(outputExtension); // Use the selected extension for MIME type
-        saveDataToFile(decodedData, "decoded_output." + outputExtension, mimeType); // Use the selected extension in the filename
+        var mimeType = getMimeTypeByExtension(outputExtension); 
+        saveDataToFile(decodedData, "decoded_output." + outputExtension, mimeType); 
     };
     reader.readAsBinaryString(decodeFile);
 }
